@@ -9,7 +9,7 @@ from watchdog.events import FileSystemEventHandler
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 def send_text_to_telegram(bot_id, chat_ids, message, debug_mode):
-    url = f"https://api.telegram.org/bot{bot_id}/sendMessage"
+    url = "https://api.telegram.org/bot{}/sendMessage".format(bot_id)
     for chat_id in chat_ids:
         payload = {
             'chat_id': chat_id,
@@ -17,8 +17,8 @@ def send_text_to_telegram(bot_id, chat_ids, message, debug_mode):
         }
         response = requests.post(url, data=payload)
         if debug_mode:
-            logging.info(f"Sent message to chat ID {chat_id}: {message}")
-            logging.info(f"Response: {response.text}")
+            logging.info("Sent message to chat ID {}: {}".format(chat_id, message))
+            logging.info("Response: {}".format(response.text))
 
 class LogFileEventHandler(FileSystemEventHandler):
     def __init__(self, keywords, bot_id, chat_ids, n, debug_mode):
@@ -34,7 +34,7 @@ class LogFileEventHandler(FileSystemEventHandler):
         if event.is_directory:
             return
         if self.debug_mode:
-            logging.info(f"File modified: {event.src_path}")
+            logging.info("File modified: {}".format(event.src_path))
         self.check_file(event.src_path)
 
     def check_file(self, file_path):
@@ -52,7 +52,7 @@ class LogFileEventHandler(FileSystemEventHandler):
                     message = ' '.join(words[:self.n])
                     send_text_to_telegram(self.bot_id, self.chat_ids, message, self.debug_mode)
                     if self.debug_mode:
-                        logging.info(f"Detected keyword '{keyword}' in line: {line.strip()}")
+                        logging.info("Detected keyword '{}' in line: {}".format(keyword, line.strip()))
                     break
         self.positions[file_path] = file.tell()
 
@@ -100,7 +100,7 @@ def main():
     if not any(vars(args).values()):
         if not os.path.exists(config_path):
             create_default_config(config_path)
-            logging.error(f"Configuration file created at {config_path}. Please fill in the required parameters.")
+            logging.error("Configuration file created at {}. Please fill in the required parameters.".format(config_path))
             return
 
         filenames, keywords, n, bot_id, chat_ids, debug = read_config(config_path)
@@ -132,3 +132,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
